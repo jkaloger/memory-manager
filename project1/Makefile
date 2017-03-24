@@ -1,10 +1,5 @@
-# 
-# Sample Makefile for project 1 
-#
-# The program used for illustration purposes is
-# a simple program using prime numbers
-#
-
+# Makefile For COMP30023 Project 1
+# Jack Kaloger 2017
 
 ## CC  = Compiler.
 ## CFLAGS = Compiler flags.

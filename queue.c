@@ -9,15 +9,26 @@
 
 #include "queue.h"
 
-void *dequeue(List q)
+void *dequeue(List *q)
 {
     return pop(q);
 }
 
-void enqueue(List q, int data)
+void enqueue(List *q, Process p)
 {
-    List new = (List)malloc(sizeof(List));
-    new->data = data;
-    new->next = q;
-    q = new;
+    // temporary list to iterate through
+    List temp = *q;
+
+    // create new node in list
+    List new = malloc(sizeof(struct list_t));
+    new->process = p;
+    new->next = NULL;
+    if(!*q) {
+        *q = new;
+    } else {
+        while(temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = new;
+    }
 }

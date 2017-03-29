@@ -4,15 +4,15 @@
 ## CC  = Compiler.
 ## CFLAGS = Compiler flags.
 CC	= gcc
-CFLAGS =	-Wall -Wextra -std=gnu99
+CFLAGS =	-Wall -Wextra -std=gnu99 -g
 
 
 ## OBJ = Object files.
 ## SRC = Source files.
 ## EXE = Executable name.
 
-SRC =		main.c swap.c queue.c list.c
-OBJ =		main.o swap.o queue.o list.o
+SRC =		main.c swap.c queue.c list.c process.h
+OBJ =		main.o swap.o queue.o list.o process.o
 EXE = 		swap
 
 ## Top level target is executable.
@@ -32,5 +32,7 @@ clobber: clean
 ## Dependencies
 main.o:	swap.h process.h list.h queue.h
 swap.o:	swap.h
+list.h: process.h
 list.o: list.h
-queue.o: queue.h list.h
+queue.h: list.h
+queue.o: queue.h

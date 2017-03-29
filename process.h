@@ -3,6 +3,9 @@
  * Jack Kaloger Project 1 COMP30023 2017
  */
 
+#ifndef PROCESS_H
+#define PROCESS_H
+
 typedef struct process_t *Process;
 
 struct process_t {
@@ -11,3 +14,8 @@ struct process_t {
 	int memSize;
 	int jobTime;
 };
+
+int compareId(Process p1, Process p2);
+int compareTimeCreated(Process p1, Process p2);
+
+#endif

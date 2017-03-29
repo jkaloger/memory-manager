@@ -3,13 +3,21 @@
  * for Project 1 COMP30023
  */
 
+#ifndef LIST_H
+#define LIST_H
+
+#include "process.h"
+
 typedef struct list_t *List;
 
 struct list_t {
-	void *data;
+	Process process;
 	List next;
 };
 
-void push(List l, void *data);
-void *pop();
-void deleteAtIndex(List l, int index);
+void insertSorted(List *l, Process p);
+void push(List *l, Process p);
+void *pop(List *l);
+void printList(List l);
+
+#endif

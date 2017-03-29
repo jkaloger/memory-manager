@@ -1,32 +1,61 @@
 /* Linked Lists
  */
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "list.h"
 
-void push(List l, void *data)
+void insertSorted(List *l, Process p)
 {
-	List new = malloc(sizeof(List));
-	
-	new->data = data;
-	new->next = l;
+    // temporary list to iterate through
+    List temp = *l;
+
+    // create new node in list
+    List new = malloc(sizeof(struct list_t));
+    new->process = p;
+    new->next = NULL;
+    if(!*l) {
+        *l = new;
+    } else {
+        while(temp->next != NULL) {
+            if(compareTimeCreated(temp->process, p) == 0)
+                break;
+            temp = temp->next;
+        }
+        temp->next = new;
+    }
 }
 
-void *pop(List l)
+void push(List *l, Process p)
 {
-	if(!l)
+    // create our new node with process p
+	List new;
+    new = malloc(sizeof(struct list_t));
+	new->process = p;
+	new->next = *l;
+    *l = new;
+}
+
+void *pop(List *l)
+{
+	if(!*l)
 		return NULL;
 
-	List toFree = l;
+	List toFree = *l;
 
-	void *data = l->data;
-	l = l->next;
+	Process process = (*l)->process;
+    (*l) = (*l)->next;
 
 	free(toFree);
 
-	return data;
+	return process;
 }
 
-void deleteAtIndex(List l, int index)
+void printList(List l)
 {
+    if(l) {
+        printf("%d\n", (l->process)->timeCreated);
+        printList(l->next);
+    }
 }
+

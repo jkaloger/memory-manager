@@ -4,8 +4,15 @@
  *  COMP30023 Project 1
  */
 
+#ifndef QUEUE_H
+#define QUEUE_H
+
 #include "list.h"
+#include "process.h"
 
-void enqueue(List q, int data);
-void *dequeue(List q);
+typedef List Queue;
 
+void enqueue(Queue *q, Process p);
+void *dequeue(Queue *q);
+
+#endif

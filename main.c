@@ -6,22 +6,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "queue.h"
 #include "swap.h"
+#include "process.h"
 
-void parse(char *file, int ***A);
+int parse(char *file, Process **p);
 
 int main(int argc, char **argv)
 {
-    int **table;
-    table = malloc(sizeof(int *) * 4);
-    parse(argv[1], &table);
-    
+    List q = (List)malloc(sizeof(List));
+    // we keep an array of the processes input
+    Process *p = malloc(sizeof(Process *));
+    int n = parse(argv[1], &p);
+    for(int i = 0 ; i < n ; i++)
+        printf("%d\n", p[i]->id);
     return 0;
 }
 
-void parse(char *file, int ***A)
+int parse(char *file, Process **p)
 {
-    // Read file
+    // Read in file
     FILE *f;
     f = fopen(file, "r");
     if(f == NULL) {
@@ -29,14 +33,23 @@ void parse(char *file, int ***A)
         exit(EXIT_FAILURE);
     }
 
-    // initialise
-    for(int j = 0 ; j < 4 ; j++)
-        (*A)[j] = malloc(sizeof(int));
-    int i = 0;
-    while(fscanf(f, "%d %d %d %d", &(*A)[0][i], &(*A)[1][i], &(*A)[2][i], &(*A)[3][i]) == 4) {
+    // some counting/temp variables
+    int i = 0,
+        a = 0,
+        b = 0,
+        c = 0,
+        d = 0;
+
+    // loop thrugh every line and store the process in struct
+    while(fscanf(f, "%d %d %d %d", &a,&b,&c,&d) == 4) {
+        (*p) = realloc((*p), sizeof(Process *) * i+1);
+        (*p)[i] = malloc(sizeof(Process));
+        (*p)[i]->timeCreated = a;
+        (*p)[i]->id = b;
+        (*p)[i]->memSize = c;
+        (*p)[i]->jobTime = d;
         i++;
-        for(int j = 0 ; j < 4 ; j++) {
-            (*A)[j] = realloc((*A)[j], sizeof(int) * i+1);
-        }
     }
+
+    return i;
 }

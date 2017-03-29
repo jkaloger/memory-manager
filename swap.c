@@ -3,6 +3,9 @@
  * Jack Kaloger 2017
  */
 
+#include "swap.h"
+#include "list.h"
+
 void bestFirst()
 {
 

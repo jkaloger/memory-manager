@@ -6,8 +6,19 @@
 #include "swap.h"
 #include "list.h"
 
-void bestFirst()
-{
+void swap(){
+    // find free spot in our memory
+    
+    if(0) { // (there are no free spots)
+        // MAKE ONE
+    }
+
+    // pop hdd into free spot
 
 
+    // done
 }
+
+void bestFit(){}
+void worstFit(){}
+void firstFit(){}

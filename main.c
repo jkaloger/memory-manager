@@ -11,24 +11,37 @@
 #include "swap.h"
 #include "process.h"
 
+#define DEBUG 0
+
 int parse(char *file, List *l);
 
+/* Drives our memory manager
+ */
 int main(int argc, char **argv)
 {
-    Queue q = NULL;
-    List processes = NULL;
+    List processes = NULL; // our initial list of processes from input file
+    Queue q = NULL; // round robin queue
 
     // we keep an array of the processes input
     int n = parse(argv[1], &processes);
     int time = 0;
+    int event = 0;
     while(n > 0) {
+        // add new processes to the round robin queue
         if(time >= (processes->process)->timeCreated) {
             enqueue(&q, pop(&processes)); 
+            // continue doing this until we're out of processes
             n--;
+            if(DEBUG == 1) {
+                printf("time: %d\n", time);
+                printList(q);
+            }
         }
-        time++;
+        if(event == 1) {
+
+        }
+        time++; // the flow of time continues
     }
-    printList(q);
     return 0;
 }
 
@@ -57,9 +70,10 @@ int parse(char *file, List *l)
         proc->id = b;
         proc->memSize = c;
         proc->jobTime = d;
-        insertSorted(l, proc);
+        insertSorted(l, proc); //add our new struct into the linked list
         i++;
     }
-
+    
+    // return the number of processes
     return i;
 }

@@ -16,6 +16,6 @@ struct process_t {
 };
 
 int compareId(Process p1, Process p2);
-int compareTimeCreated(Process p1, Process p2);
+int compareTimeCreated(void *p1, void *p2);
 
 #endif

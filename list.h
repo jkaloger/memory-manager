@@ -11,13 +11,14 @@
 typedef struct list_t *List;
 
 struct list_t {
-	Process process;
+	void *data;
 	List next;
 };
 
-void insertSorted(List *l, Process p);
-void push(List *l, Process p);
+void insertSorted(int (*)(void *a, void *b),List *l, void *d);
+void push(List *l, void *data);
 void *pop(List *l);
+void removeProcess(List *l, Process p);
 void printList(List l);
 
 #endif

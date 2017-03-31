@@ -14,5 +14,6 @@ typedef List Queue;
 
 void enqueue(Queue *q, Process p);
 void *dequeue(Queue *q);
+void *poll(Queue q);
 
 #endif

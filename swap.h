@@ -6,9 +6,12 @@
 #ifndef SWAP_H
 #define SWAP_H
 
-void swap(/*PARAMS?*/);
-void firstFit();
-void bestFit();
-void worstFit();
+#include "list.h"
+#include "queue.h"
+
+void swap(void (*)(List *disk, Process p), List *disk, List *memory, Queue *processes);
+void firstFit(List *mem, Process p);
+void bestFit(List *mem, Process p);
+void worstFit(List *mem, Process p);
 
 #endif

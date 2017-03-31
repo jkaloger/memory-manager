@@ -32,3 +32,8 @@ void enqueue(List *q, Process p)
         temp->next = new;
     }
 }
+
+void *poll(Queue q)
+{
+    return q->process;
+}

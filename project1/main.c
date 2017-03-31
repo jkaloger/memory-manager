@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "list.h"
 #include "queue.h"
@@ -20,28 +21,34 @@ int parse(char *file, List *l);
 int main(int argc, char **argv)
 {
     List processes = NULL; // our initial list of processes from input file
-    Queue q = NULL; // round robin queue
+    Queue q = NULL; // round robin queue, these are pointers to processes, which could be in DISK OR MEMORY!!
+    List disk = NULL; // processes on our disk, if a process isnt here, its in memory
+    List freeMemory = NULL; // list of holes in memory
 
     // we keep an array of the processes input
     int n = parse(argv[1], &processes);
     int time = 0;
     int event = 0;
     while(n > 0) {
-        // add new processes to the round robin queue
-        if(time >= (processes->process)->timeCreated) {
+        // add new processes to the round robin queue AND TO DISK FIRST
+        if(time >= ((Process)(processes->data))->timeCreated) {
+            push(&disk, processes->data);
             enqueue(&q, pop(&processes)); 
-            // continue doing this until we're out of processes
-            n--;
+
+            n--; // continue doing this until we're out of processes
+
             if(DEBUG == 1) {
                 printf("time: %d\n", time);
                 printList(q);
             }
         }
         if(event == 1) {
-
+            swap(firstFit, &disk, &freeMemory, &processes);
         }
         time++; // the flow of time continues
     }
+    if(DEBUG == 1)
+        printList(disk);
     return 0;
 }
 
@@ -70,7 +77,7 @@ int parse(char *file, List *l)
         proc->id = b;
         proc->memSize = c;
         proc->jobTime = d;
-        insertSorted(l, proc); //add our new struct into the linked list
+        insertSorted(&compareTimeCreated, l, proc); //add our new struct into the linked list
         i++;
     }
     

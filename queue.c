@@ -14,14 +14,14 @@ void *dequeue(List *q)
     return pop(q);
 }
 
-void enqueue(List *q, Process p)
+void enqueue(List *q, void *data)
 {
     // temporary list to iterate through
     List temp = *q;
 
     // create new node in list
     List new = malloc(sizeof(struct list_t));
-    new->process = p;
+    new->data = data;
     new->next = NULL;
     if(!*q) {
         *q = new;
@@ -35,5 +35,5 @@ void enqueue(List *q, Process p)
 
 void *poll(Queue q)
 {
-    return q->process;
+    return q->data;
 }

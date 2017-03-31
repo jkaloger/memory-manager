@@ -12,7 +12,7 @@
 
 typedef List Queue;
 
-void enqueue(Queue *q, Process p);
+void enqueue(Queue *q, void *data);
 void *dequeue(Queue *q);
 void *poll(Queue q);
 

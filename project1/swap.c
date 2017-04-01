@@ -8,32 +8,33 @@
 #include "swap.h"
 #include "list.h"
 
-void swap(void (*method)(Memory *memory, Process p), List *disk, Memory *memory){
-
-    Process proc = pop(disk); // process sitting on disk for longest
+void swap(void (*method)(Memory *memory, Process p, Queue *disk), Queue *disk, Memory *memory)
+{
+    Process proc = dequeue(disk); // process sitting on disk for longest
     if(proc != NULL) {
         // find our free spot and add our process
-        method(memory, proc);
+        method(memory, proc, disk);
     }
+    
 }
 
-void firstFit(Memory *memory, Process p){
-    List *temp = &((*memory)->holes);
+void firstFit(Memory *memory, Process p, Queue *disk){
+    List temp = (*memory)->holes;
     int success = 0;
-    while( *temp != NULL ) {
-        int size = ( (Hole)((*temp)->data))->size;
+    while(success == 0 && temp != NULL ) {
+        int size = ( (Hole)(temp->data))->size;
         if(size > p->size) {
             success = 1;
-            addProcess(memory, ((Hole)((*temp)->data))->startAddress, p);
+            addProcess(memory, &(temp->data), p);
+            break;
         }
-
+        temp = temp->next;
     }
-
     if(success == 0) {
-        int addr = freeHole(memory, p->size);
-        addProcess(memory, addr, p);
+        freeHole(memory, disk);
+        firstFit(memory, p, disk);
     }
 }
-void bestFit(){}
-void worstFit(){}
+void bestFit(Memory *memory, Process p, Queue *disk){}
+void worstFit(Memory *memory, Process p, Queue *disk){}
 

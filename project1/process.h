@@ -14,6 +14,7 @@ struct process_t {
 	int id;
 	int size;
 	int timeRemaining;
+	int loc;
 };
 
 int compareId(Process p1, Process p2);

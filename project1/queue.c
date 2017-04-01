@@ -9,18 +9,17 @@
 
 #include "queue.h"
 
-void *dequeue(List *q)
+void *dequeue(Queue *q)
 {
     return pop(q);
 }
 
-void enqueue(List *q, void *data)
+void enqueue(Queue *q, void *data)
 {
     // temporary list to iterate through
-    List temp = *q;
-
+    Queue temp = *q;
     // create new node in list
-    List new = malloc(sizeof(struct list_t));
+    Queue new = malloc(sizeof(struct list_t));
     new->data = data;
     new->next = NULL;
     if(!*q) {

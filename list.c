@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "list.h"
+#include "memory.h"
 
 void insertSorted(int (*compareFunction)(void *a, void *b), List *l, void *p)
 {
@@ -58,11 +59,11 @@ void *peek(List l)
     return l->data;
 }
 
-void removeProcess(List *l, Process p)
+void removeItem(List *l, void *data)
 {
     List *temp = l;
     while((*temp) == (*temp)->next) {
-        if(((*temp)->next)->data == p) {
+        if(((*temp)->next)->data == data) {
             // found our item
             (*temp)->next = ((*temp)->next)->next;
         }
@@ -73,7 +74,8 @@ void removeProcess(List *l, Process p)
 void printList(List l)
 {
     if(l) {
-        printf("%p\n", &((Process)(l->data))->timeCreated);
+        fprintf(stderr, "loc=%d\n", ((Process)(l->data))->loc);
+        //printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
         printList(l->next);
     }
 }

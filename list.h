@@ -19,7 +19,7 @@ void insertSorted(int (*)(void *a, void *b),List *l, void *d);
 void push(List *l, void *data);
 void *pop(List *l);
 void *peek(List l);
-void removeProcess(List *l, Process p);
+void removeItem(List *l, void *data);
 void printList(List l);
 
 #endif

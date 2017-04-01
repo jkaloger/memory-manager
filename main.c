@@ -38,8 +38,9 @@ int main(int argc, char **argv)
     int eventTimer = 0;
     int q = QUANTUM;
     Process ready = NULL;
-    while(1) { // loop until RR queue empty
-        
+
+    /* loop until RR queue empty */
+    while(time < 100) { 
         // add new processes to the disk and queue them for execution in the RR queue
         if(n > 0 && time == ((Process)peek(processes))->timeCreated) {
             Process newProc = pop(&processes); // our process
@@ -50,9 +51,12 @@ int main(int argc, char **argv)
 
         if(eventTimer == 0) { // AN EVENT OCCURED
             swap(firstFit, &disk, &mainMemory); // swap longest waiting process to main memory
-            eventTimer = schedule(); // schedule using RR
+            //eventTimer = schedule(); // schedule using RR
+
         }
         time++; // the flow of time continues
+        eventTimer = 0;
+
     }
     
     // done :)
@@ -84,6 +88,7 @@ int parse(char *file, List *l)
         proc->id = b;
         proc->size = c;
         proc->timeRemaining = d;
+        proc->loc = -1;
         insertSorted(&compareTimeCreated, l, proc); //add our new struct into the linked list
         i++;
     }

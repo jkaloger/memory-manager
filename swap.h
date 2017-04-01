@@ -10,9 +10,9 @@
 #include "list.h"
 #include "queue.h"
 
-void swap(void (*)(Memory *mem, Process p), List *disk, Memory *memory);
-void firstFit(Memory *mem, Process p);
-void bestFit(Memory *mem, Process p);
-void worstFit(Memory *mem, Process p);
+void swap(void (*)(Memory *memory, Process p, Queue *disk), Queue *disk, Memory *memory);
+void firstFit(Memory *memory, Process p, Queue *disk);
+void bestFit(Memory *memory, Process p, Queue *disk);
+void worstFit(Memory *memory, Process p, Queue *disk);
 
 #endif

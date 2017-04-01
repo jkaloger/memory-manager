@@ -1,7 +1,7 @@
-/* queue.c
+/* Jack Kaloger 758278
+ * queue.c
  * Queue functionality
- * Jack Kaloger 2017
- * COMP30023 Project 1
+ * COMP30023 Project 1 2017
  */
 
 #include <stdio.h>

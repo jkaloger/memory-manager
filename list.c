@@ -1,4 +1,6 @@
-/* Linked Lists
+/* Jack Kaloger 758278
+ * Linked Lists
+ * COMP30023 Project 1 2017
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,7 +13,7 @@ void insertSorted(int (*compareFunction)(void *a, void *b), List *l, void *p)
     List temp = *l;
 
     // create new node in list
-    List new = malloc(sizeof(struct list_t));
+    List new = malloc(sizeof(struct list_t)); // allocate struct size NOT POINTER SIZE
     new->data = p;
     new->next = NULL;
     if(!*l) {
@@ -51,6 +53,11 @@ void *pop(List *l)
 	return data;
 }
 
+void *peek(List l)
+{
+    return l->data;
+}
+
 void removeProcess(List *l, Process p)
 {
     List *temp = l;
@@ -70,4 +77,5 @@ void printList(List l)
         printList(l->next);
     }
 }
+
 

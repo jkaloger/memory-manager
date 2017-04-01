@@ -1,7 +1,7 @@
-/*  queue.h
+/*  Jack Kaloger 758278
+ *  queue.h
  *  provides queue data structure
- *  Jack Kaloger
- *  COMP30023 Project 1
+ *  COMP30023 Project 1 2017
  */
 
 #ifndef QUEUE_H

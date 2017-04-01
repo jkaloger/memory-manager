@@ -1,3 +1,8 @@
+/* Jack Kaloger 758278
+ * process.c
+ * COMP30023 Project 1 2017
+ */
+
 #include "process.h"
 
 int compareId(Process p1, Process p2)
@@ -19,3 +24,10 @@ int compareTimeCreated(void *p1, void *p2)
     return 0;
 
 }
+
+int schedule()
+{
+
+    return -1;
+}
+

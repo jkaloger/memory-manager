@@ -1,18 +1,23 @@
-/* Memory Management program
- * Project 1 COMP30023
- * Jack Kaloger 2017
+/* Jack Kaloger 758278
+ * Memory Management program
+ * Project 1 COMP30023 2017
+ * Algorithms are fun
+ * C is Fun
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include "list.h"
 #include "queue.h"
 #include "swap.h"
 #include "process.h"
+#include "memory.h"
 
-#define DEBUG 0
+#define DEBUG 1
+#define QUANTUM 7
+#define TABLECOLS 4
+#define INF -1
 
 int parse(char *file, List *l);
 
@@ -20,35 +25,37 @@ int parse(char *file, List *l);
  */
 int main(int argc, char **argv)
 {
+    /* Structures */
     List processes = NULL; // our initial list of processes from input file
-    Queue q = NULL; // round robin queue, these are pointers to processes, which could be in DISK OR MEMORY!!
-    List disk = NULL; // processes on our disk, if a process isnt here, its in memory
-    List freeMemory = NULL; // list of holes in memory
-
+    Queue roundRobin = NULL; // round robin queue, these are pointers to processes, which could be in DISK OR MEMORY!!
+    Queue disk = NULL; // processes on our disk
+    Memory mainMemory = memInit(atoi(argv[2]));
+    
+    /* Counting variables */
     // we keep an array of the processes input
     int n = parse(argv[1], &processes);
     int time = 0;
-    int event = 0;
-    while(n > 0) {
-        // add new processes to the round robin queue AND TO DISK FIRST
-        if(time >= ((Process)(processes->data))->timeCreated) {
-            push(&disk, processes->data);
-            enqueue(&q, pop(&processes)); 
-
-            n--; // continue doing this until we're out of processes
-
-            if(DEBUG == 1) {
-                printf("time: %d\n", time);
-                printList(q);
-            }
+    int eventTimer = 0;
+    int q = QUANTUM;
+    Process ready = NULL;
+    while(1) { // loop until RR queue empty
+        
+        // add new processes to the disk and queue them for execution in the RR queue
+        if(n > 0 && time == ((Process)peek(processes))->timeCreated) {
+            Process newProc = pop(&processes); // our process
+            enqueue(&disk, newProc); // add it to disk
+            enqueue(&roundRobin, newProc); // add to RR queue
+            n--; // continue doing this until all processes have been added
         }
-        if(event == 1) {
-            swap(firstFit, &disk, &freeMemory, &processes);
+
+        if(eventTimer == 0) { // AN EVENT OCCURED
+            swap(firstFit, &disk, &mainMemory); // swap longest waiting process to main memory
+            eventTimer = schedule(); // schedule using RR
         }
         time++; // the flow of time continues
     }
-    if(DEBUG == 1)
-        printList(disk);
+    
+    // done :)
     return 0;
 }
 
@@ -58,7 +65,7 @@ int parse(char *file, List *l)
     FILE *f;
     f = fopen(file, "r");
     if(f == NULL) {
-        fprintf(stderr, "Error opening file\n");
+        fprintf(stderr, "Error opening file\n"); // woops
         exit(EXIT_FAILURE);
     }
 
@@ -70,13 +77,13 @@ int parse(char *file, List *l)
         d = 0;
 
     // loop thrugh every line and store the process in struct
-    while(fscanf(f, "%d %d %d %d", &a,&b,&c,&d) == 4) {
+    while(fscanf(f, "%d %d %d %d", &a,&b,&c,&d) == TABLECOLS) {
         Process proc;
         proc = malloc(sizeof(Process));
         proc->timeCreated = a;
         proc->id = b;
-        proc->memSize = c;
-        proc->jobTime = d;
+        proc->size = c;
+        proc->timeRemaining = d;
         insertSorted(&compareTimeCreated, l, proc); //add our new struct into the linked list
         i++;
     }
@@ -84,3 +91,4 @@ int parse(char *file, List *l)
     // return the number of processes
     return i;
 }
+

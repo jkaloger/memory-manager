@@ -17,7 +17,7 @@
 #define DEBUG 1
 #define QUANTUM 7
 #define TABLECOLS 4
-#define INF 2
+#define INF -1
 
 int parse(char *file, List *l);
 
@@ -34,7 +34,6 @@ int main(int argc, char **argv)
     /* Counting variables */
     // we keep an array of the processes input
     int n = parse(argv[1], &processes);
-    exit(EXIT_FAILURE);
     int time = 0;
     int eventTimer = 0;
     int q = QUANTUM;
@@ -47,16 +46,15 @@ int main(int argc, char **argv)
             enqueue(&disk, newProc); // add it to disk
             enqueue(&roundRobin, newProc); // add to RR queue
             n--; // continue doing this until all processes have been added
+            eventTimer = 0;
         }
 
         if(eventTimer == 0) { // AN EVENT OCCURED
             swap(firstFit, &disk, &mainMemory); // swap longest waiting process to main memory
-            //eventTimer = schedule(); // schedule using RR
+            eventTimer = schedule(); // schedule using RR
 
         }
         time++; // the flow of time continues
-        eventTimer = 0;
-
     }
     
     // done :)
@@ -83,15 +81,13 @@ int parse(char *file, List *l)
     // loop thrugh every line and store the process in struct
     while(fscanf(f, "%d %d %d %d", &a,&b,&c,&d) == TABLECOLS) {
         Process proc;
-        proc = malloc(sizeof(Process));
+        proc = malloc(sizeof(struct process_t));
         proc->timeCreated = a;
         proc->id = b;
         proc->size = c;
         proc->timeRemaining = d;
-        proc->loc = INF;
-        insertSorted(&compareTimeCreated, l, proc); //add our new struct into the linked list
-        printList(*l);
-        printf("%d", proc->loc);
+        proc->memLoc = INF;
+        enqueue(l, proc); //add our new struct into the queue
         i++;
     }
     

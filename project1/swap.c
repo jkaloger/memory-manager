@@ -14,8 +14,7 @@ void swap(void (*method)(Memory *memory, Process p, Queue *disk), Queue *disk, M
     if(proc != NULL) {
         // find our free spot and add our process
         method(memory, proc, disk);
-    }
-    
+    }   
 }
 
 void firstFit(Memory *memory, Process p, Queue *disk){
@@ -23,8 +22,10 @@ void firstFit(Memory *memory, Process p, Queue *disk){
     int success = 0;
     while(success == 0 && temp != NULL ) {
         int size = ( (Hole)(temp->data))->size;
-        if(size > p->size) {
+        if(size >= p->size) {
             success = 1;
+            fprintf(stderr, "found a hole, adding\n");
+            printList((*memory)->holes);
             addProcess(memory, (Hole *)&(temp->data), p);
             break;
         }

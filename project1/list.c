@@ -8,23 +8,27 @@
 #include "list.h"
 #include "memory.h"
 
-void insertSorted(int (*compareFunction)(void *a, void *b), List *l, void *p)
+void insertSorted(int (*compareFunction)(void *a, void *b), List *l, void *data)
 {
     // temporary list to iterate through
     List temp = *l;
-
     // create new node in list
     List new = malloc(sizeof(struct list_t)); // allocate struct size NOT POINTER SIZE
-    new->data = p;
+    new->data = data;
     new->next = NULL;
     if(!*l) {
         *l = new;
+    } else if(temp->next == NULL) {
+        new->next = temp;
+        *l = new;
     } else {
         while(temp->next != NULL) {
-            if(compareFunction(&(temp->data), &p) == 0)
+            if(compareFunction(data, (temp->next)->data) <= 0) {
                 break;
+            }
             temp = temp->next;
         }
+        new->next = temp->next;
         temp->next = new;
     }
 }
@@ -74,10 +78,9 @@ void removeItem(List *l, void *data)
 void printList(List l)
 {
     if(l) {
-        Process p = (Process)(l->data);
-        fprintf(stderr, "loc=%d\n", p->loc);
-        //printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
-        //fprintf(stderr, "%d\n", *(int *)(l->data));
+        //Process p = l->data;
+        printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
+        //fprintf(stderr, "%d\n", p->timeCreated);
         printList(l->next);
     }
 }

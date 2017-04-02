@@ -19,6 +19,5 @@ struct process_t {
 
 int compareId(Process p1, Process p2);
 int compareTimeCreated(void *p1, void *p2);
-int schedule();
 
 #endif

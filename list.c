@@ -70,6 +70,7 @@ void removeItem(List *l, void *data)
         if(((*temp)->next)->data == data) {
             // found our item
             (*temp)->next = ((*temp)->next)->next;
+            return;
         }
     }
     fprintf(stderr, "couldnt find process on disk!\n");
@@ -83,6 +84,21 @@ void printList(List l)
         //fprintf(stderr, "%d\n", p->timeCreated);
         printList(l->next);
     }
+}
+
+int listLen(List l)
+{
+    List temp = l;
+    int len;
+    if(temp != NULL)
+        len = 1;
+    else
+        return 0;
+    while(temp->next != NULL) {
+        len++;
+        temp = temp->next;
+    }
+    return len;
 }
 
 

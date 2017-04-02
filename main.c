@@ -11,6 +11,7 @@
 #include "list.h"
 #include "queue.h"
 #include "swap.h"
+#include "schedule.h"
 #include "process.h"
 #include "memory.h"
 
@@ -27,17 +28,19 @@ int main(int argc, char **argv)
 {
     /* Structures */
     List processes = NULL; // our initial list of processes from input file
-    Queue roundRobin = NULL; // round robin queue, these are pointers to processes, which could be in DISK OR MEMORY!!
+    Queue roundRobin = NULL; // round robin queue
     Queue disk = NULL; // processes on our disk
-    Memory mainMemory = memInit(atoi(argv[2]));
-    
+    Memory mainMemory = memInit(1000);
+    roundRobin = (mainMemory->processes);
+
     /* Counting variables */
     // we keep an array of the processes input
-    int n = parse(argv[1], &processes);
+    int n = parse("../in/input.txt", &processes);
     int time = 0;
     int eventTimer = 0;
     int q = QUANTUM;
-    Process ready = NULL;
+    int processesLoaded = 0;
+
     /* loop until RR queue empty */
     while(time < 100) { 
         // add new processes to the disk and queue them for execution in the RR queue
@@ -46,15 +49,22 @@ int main(int argc, char **argv)
             enqueue(&disk, newProc); // add it to disk
             enqueue(&roundRobin, newProc); // add to RR queue
             n--; // continue doing this until all processes have been added
-            eventTimer = 0;
         }
 
         if(eventTimer == 0) { // AN EVENT OCCURED
+            int loaded = ((Process)peek(disk))->id; // get the id of the process about to be loaded
             swap(firstFit, &disk, &mainMemory); // swap longest waiting process to main memory
-            eventTimer = schedule(); // schedule using RR
-
+            fprintf(stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n", 
+                   time,
+                   loaded,
+                   listLen(mainMemory->processes), // number of processes in memory
+                   listLen(mainMemory->holes), // number of holes
+                   memUsage(mainMemory)); // per centage of memory usage
+            eventTimer = schedule(&roundRobin, QUANTUM); // schedule using RR
         }
+        ((Process)peek(roundRobin))->timeRemaining--; // front of RR queue is executing
         time++; // the flow of time continues
+        eventTimer--;
     }
     
     // done :)

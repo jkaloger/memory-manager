@@ -24,8 +24,6 @@ void firstFit(Memory *memory, Process p, Queue *disk){
         int size = ( (Hole)(temp->data))->size;
         if(size >= p->size) {
             success = 1;
-            fprintf(stderr, "found a hole, adding\n");
-            printList((*memory)->holes);
             addProcess(memory, (Hole *)&(temp->data), p);
             break;
         }

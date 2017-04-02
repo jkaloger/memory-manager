@@ -25,9 +25,4 @@ int compareTimeCreated(void *p1, void *p2)
 
 }
 
-int schedule()
-{
-
-    return -1;
-}
 

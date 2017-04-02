@@ -21,5 +21,6 @@ void *pop(List *l);
 void *peek(List l);
 void removeItem(List *l, void *data);
 void printList(List l);
+int listLen(List l);
 
 #endif

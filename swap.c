@@ -25,7 +25,7 @@ void firstFit(Memory *memory, Process p, Queue *disk){
         int size = ( (Hole)(temp->data))->size;
         if(size > p->size) {
             success = 1;
-            addProcess(memory, &(temp->data), p);
+            addProcess(memory, (Hole *)&(temp->data), p);
             break;
         }
         temp = temp->next;

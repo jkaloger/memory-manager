@@ -17,7 +17,7 @@
 #define DEBUG 1
 #define QUANTUM 7
 #define TABLECOLS 4
-#define INF -1
+#define INF 2
 
 int parse(char *file, List *l);
 
@@ -34,11 +34,11 @@ int main(int argc, char **argv)
     /* Counting variables */
     // we keep an array of the processes input
     int n = parse(argv[1], &processes);
+    exit(EXIT_FAILURE);
     int time = 0;
     int eventTimer = 0;
     int q = QUANTUM;
     Process ready = NULL;
-
     /* loop until RR queue empty */
     while(time < 100) { 
         // add new processes to the disk and queue them for execution in the RR queue
@@ -88,8 +88,10 @@ int parse(char *file, List *l)
         proc->id = b;
         proc->size = c;
         proc->timeRemaining = d;
-        proc->loc = -1;
+        proc->loc = INF;
         insertSorted(&compareTimeCreated, l, proc); //add our new struct into the linked list
+        printList(*l);
+        printf("%d", proc->loc);
         i++;
     }
     

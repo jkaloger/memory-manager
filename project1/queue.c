@@ -22,6 +22,7 @@ void enqueue(Queue *q, void *data)
     Queue new = malloc(sizeof(struct list_t));
     new->data = data;
     new->next = NULL;
+
     if(!*q) {
         *q = new;
     } else {

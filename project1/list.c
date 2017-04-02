@@ -74,8 +74,10 @@ void removeItem(List *l, void *data)
 void printList(List l)
 {
     if(l) {
-        fprintf(stderr, "loc=%d\n", ((Process)(l->data))->loc);
+        Process p = (Process)(l->data);
+        fprintf(stderr, "loc=%d\n", p->loc);
         //printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
+        //fprintf(stderr, "%d\n", *(int *)(l->data));
         printList(l->next);
     }
 }

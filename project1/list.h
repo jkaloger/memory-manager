@@ -19,6 +19,7 @@ void insertSorted(int (*)(void *a, void *b),List *l, void *d);
 void push(List *l, void *data);
 void *pop(List *l);
 void *peek(List l);
+void *getTail(List l);
 void removeItem(List *l, void *data);
 void printList(List l);
 int listLen(List l);

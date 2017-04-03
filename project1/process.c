@@ -5,8 +5,15 @@
 
 #include "process.h"
 
-int compareId(Process p1, Process p2)
+// returns 1 if p1 > p2
+int compareId(void *p1, void *p2)
 {
+	int a = ((Process)p1)->id;
+    int b = ((Process)p2)->id;
+    if(a > b)
+        return 1;
+    if(a < b)
+        return -1;
 
     return 0;
 }
@@ -14,8 +21,8 @@ int compareId(Process p1, Process p2)
 // returns 1 if p1 > p2
 int compareTimeCreated(void *p1, void *p2)
 {
-    int a = ((Process)p1)->timeCreated;
-    int b = ((Process)p2)->timeCreated;
+    int a = ((Process)p1)->mod;
+    int b = ((Process)p2)->mod;
     if(a > b)
         return 1;
     if(a < b)
@@ -23,6 +30,13 @@ int compareTimeCreated(void *p1, void *p2)
 
     return 0;
 
+}
+
+int compareModId(void *p1, void *p2)
+{
+	if(compareTimeCreated(p1, p2) == 0)
+		return compareId(p1, p2);
+	return 1;
 }
 
 

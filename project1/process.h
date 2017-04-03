@@ -10,14 +10,15 @@
 typedef struct process_t *Process;
 
 struct process_t {
-	int timeCreated;
+	int mod;
 	int id;
 	int size;
 	int timeRemaining;
 	int memLoc;
 };
 
-int compareId(Process p1, Process p2);
+int compareId(void *p1, void *p2);
 int compareTimeCreated(void *p1, void *p2);
+int compareModId(void *p1, void *p2);
 
 #endif

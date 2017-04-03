@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
     /* Counting variables */
     // we keep an array of the processes input
-    int n = parse("../in/input.txt", &processes);
+    int n = parse("../in/testFirst1", &processes);
     int time = 0;
     int eventTimer = 0;
     int q = QUANTUM;
@@ -55,18 +55,23 @@ int main(int argc, char **argv)
             }
         }
 
+        // terminated processes should be removed from memory before swapping the next process
         if(((Process)peek(*roundRobin)) != NULL
            && ((Process)peek(*roundRobin))->timeRemaining == 0) { // The process finished executing
             Process proc = dequeue(roundRobin);
             removeItem(&mainMemory->processes, proc); // remove from memory
             createHole(&(mainMemory->holes), proc->memLoc, proc->memLoc + proc->size - 1); // add hole
-            mergeHoles(&mainMemory); // merge holesm
+            mergeHoles(&mainMemory); // merge holes
             eventTimer = 0;
             dqStat = 1;
         }
 
         if(eventTimer == 0) {
-            int loaded = swap(firstFit, &disk, &mainMemory, time); // load oldest process on disk into memory (if any)
+            int loaded = 0;
+            if(dqStat == 0)
+                dqStat = swap(&firstFit, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
+            else
+                swap(&firstFit, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
             if(loaded > INF)
                 printStats(time, loaded, listLen(mainMemory->processes),
                            listLen(mainMemory->holes), memUsage(mainMemory));
@@ -82,7 +87,7 @@ int main(int argc, char **argv)
         /* TIME STATS */
         ((Process)peek(*roundRobin))->timeRemaining--; // front of RR queue is executing
         time++; // the flow of time continues
-        eventTimer--;
+        eventTimer--; // count down to next event
     }
 
     fprintf(stdout, "time %d, simulation finished.", time);

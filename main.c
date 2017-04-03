@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     while(time == 0 || listLen(*roundRobin) > 0) { 
         // load new processes to disk as they come in
         if(n > 0) {
-            while(((Process)peek(processes))->mod == time) {
+            while(processes != NULL && ((Process)peek(processes))->mod == time) {
                 Process newProc = pop(&processes); // our process
                 insertSorted(&compareModId, &disk, newProc); // add it to disk
                 n--; // continue doing this until all processes have been added
@@ -56,23 +56,27 @@ int main(int argc, char **argv)
         }
 
         if(((Process)peek(*roundRobin)) != NULL
-        && ((Process)peek(*roundRobin))->timeRemaining == 0) { // AN EVENT OCCURED
+           && ((Process)peek(*roundRobin))->timeRemaining == 0) { // The process finished executing
             Process proc = dequeue(roundRobin);
             removeItem(&mainMemory->processes, proc); // remove from memory
+            createHole(&(mainMemory->holes), proc->memLoc, proc->memLoc + proc->size - 1); // add hole
+            mergeHoles(&mainMemory); // merge holesm
             eventTimer = 0;
             dqStat = 1;
         }
 
         if(eventTimer == 0) {
-            int memNum = listLen(mainMemory->processes);
             int loaded = swap(firstFit, &disk, &mainMemory, time); // load oldest process on disk into memory (if any)
-            printStats(time, loaded, listLen(mainMemory->processes),
-                       listLen(mainMemory->holes), memUsage(mainMemory));
-            if(memNum > listLen(mainMemory->processes))
-                dqStat = 1;
-            schedule(roundRobin, QUANTUM, dqStat); // schedule using RR
-            eventTimer = QUANTUM;
+            if(loaded > INF)
+                printStats(time, loaded, listLen(mainMemory->processes),
+                           listLen(mainMemory->holes), memUsage(mainMemory));
+            eventTimer = schedule(roundRobin, QUANTUM, dqStat); // schedule using RR
             dqStat = 0;
+        }
+
+        if(eventTimer < 0) {
+            fprintf(stdout, "time %d, simulation finished.", time);
+            return 0;
         }
 
         /* TIME STATS */
@@ -80,7 +84,8 @@ int main(int argc, char **argv)
         time++; // the flow of time continues
         eventTimer--;
     }
-    
+
+    fprintf(stdout, "time %d, simulation finished.", time);
     // done :)
     return 0;
 }

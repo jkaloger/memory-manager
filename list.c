@@ -18,7 +18,7 @@ void insertSorted(int (*compareFunction)(void *a, void *b), List *l, void *data)
     new->next = NULL;
     if(!*l) {
         *l = new;
-    } else if(temp->next == NULL) {
+    } else if(compareFunction(data, temp->data) <= 0) { // insert at head
         new->next = temp;
         *l = new;
     } else {
@@ -60,28 +60,50 @@ void *pop(List *l)
 
 void *peek(List l)
 {
+    if(!l)
+        return NULL;
     return l->data;
+}
+
+void *getTail(List l)
+{
+    if(!l)
+        return NULL;
+    if(!l->next)
+        return l->data;
+    List temp = l;
+    
+    while(temp->next != NULL) {
+        temp = temp->next;
+    }
+
+    return temp->data;
 }
 
 void removeItem(List *l, void *data)
 {
-    List *temp = l;
-    while((*temp) == (*temp)->next) {
-        if(((*temp)->next)->data == data) {
+    if((*l)->data == data) {
+        *l = (*l)->next;
+        return;
+    }
+    List temp = *l;
+    while(temp->next != NULL) {
+        if((temp->next)->data == data) {
             // found our item
-            (*temp)->next = ((*temp)->next)->next;
+            temp->next = (temp->next)->next;
             return;
         }
+        temp = temp->next;
     }
-    fprintf(stderr, "couldnt find process on disk!\n");
+    fprintf(stderr, "couldnt find process in list!\n");
 }
 
 void printList(List l)
 {
     if(l) {
-        //Process p = l->data;
-        printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
-        //fprintf(stderr, "%d\n", p->timeCreated);
+        Process p = l->data;
+        //printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
+        fprintf(stderr, "%d\n", p->id);
         printList(l->next);
     }
 }

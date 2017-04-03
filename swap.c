@@ -5,19 +5,22 @@
 
 #include <stdio.h>
 
+#include "process.h"
 #include "swap.h"
 #include "list.h"
 
-void swap(void (*method)(Memory *memory, Process p, Queue *disk), Queue *disk, Memory *memory)
+int swap(void (*method)(Memory *memory, Process p, Queue *disk, int time), Queue *disk, Memory *memory, int time)
 {
     Process proc = dequeue(disk); // process sitting on disk for longest
     if(proc != NULL) {
         // find our free spot and add our process
-        method(memory, proc, disk);
-    }   
+        method(memory, proc, disk, time);
+        return proc->id;
+    }
+    return -1;
 }
 
-void firstFit(Memory *memory, Process p, Queue *disk){
+void firstFit(Memory *memory, Process p, Queue *disk, int time){
     List temp = (*memory)->holes;
     int success = 0;
     while(success == 0 && temp != NULL ) {
@@ -30,10 +33,14 @@ void firstFit(Memory *memory, Process p, Queue *disk){
         temp = temp->next;
     }
     if(success == 0) {
-        freeHole(memory, disk);
-        firstFit(memory, p, disk);
+        freeHole(memory, disk, time);
+        firstFit(memory, p, disk, time);
     }
 }
-void bestFit(Memory *memory, Process p, Queue *disk){}
-void worstFit(Memory *memory, Process p, Queue *disk){}
+void bestFit(Memory *memory, Process p, Queue *disk, int time){}
+void worstFit(Memory *memory, Process p, Queue *disk, int time){}
 
+void addToDisk(Queue *disk, Process proc)
+{
+    insertSorted(&compareModId, proc, disk);
+}

@@ -21,6 +21,8 @@
 #define INF -1
 
 int parse(char *file, List *l);
+void printStats(int time, int loaded, int numprocs, int numholes, int memusage);
+void addToDisk(Queue *disk, Process proc);
 
 /* Drives our memory manager
  */
@@ -28,10 +30,10 @@ int main(int argc, char **argv)
 {
     /* Structures */
     List processes = NULL; // our initial list of processes from input file
-    Queue roundRobin = NULL; // round robin queue
+    Queue *roundRobin = NULL; // round robin queue, a pointer to the memory queue
     Queue disk = NULL; // processes on our disk
     Memory mainMemory = memInit(1000);
-    roundRobin = (mainMemory->processes);
+    roundRobin = &(mainMemory->roundRobin);
 
     /* Counting variables */
     // we keep an array of the processes input
@@ -40,29 +42,41 @@ int main(int argc, char **argv)
     int eventTimer = 0;
     int q = QUANTUM;
     int processesLoaded = 0;
+    int dqStat = 0;
 
     /* loop until RR queue empty */
-    while(time < 100) { 
-        // add new processes to the disk and queue them for execution in the RR queue
-        if(n > 0 && time == ((Process)peek(processes))->timeCreated) {
-            Process newProc = pop(&processes); // our process
-            enqueue(&disk, newProc); // add it to disk
-            enqueue(&roundRobin, newProc); // add to RR queue
-            n--; // continue doing this until all processes have been added
+    while(time == 0 || listLen(*roundRobin) > 0) { 
+        // load new processes to disk as they come in
+        if(n > 0) {
+            while(((Process)peek(processes))->mod == time) {
+                Process newProc = pop(&processes); // our process
+                insertSorted(&compareModId, &disk, newProc); // add it to disk
+                n--; // continue doing this until all processes have been added
+            }
         }
 
-        if(eventTimer == 0) { // AN EVENT OCCURED
-            int loaded = ((Process)peek(disk))->id; // get the id of the process about to be loaded
-            swap(firstFit, &disk, &mainMemory); // swap longest waiting process to main memory
-            fprintf(stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n", 
-                   time,
-                   loaded,
-                   listLen(mainMemory->processes), // number of processes in memory
-                   listLen(mainMemory->holes), // number of holes
-                   memUsage(mainMemory)); // per centage of memory usage
-            eventTimer = schedule(&roundRobin, QUANTUM); // schedule using RR
+        if(((Process)peek(*roundRobin)) != NULL
+        && ((Process)peek(*roundRobin))->timeRemaining == 0) { // AN EVENT OCCURED
+            Process proc = dequeue(roundRobin);
+            removeItem(&mainMemory->processes, proc); // remove from memory
+            eventTimer = 0;
+            dqStat = 1;
         }
-        ((Process)peek(roundRobin))->timeRemaining--; // front of RR queue is executing
+
+        if(eventTimer == 0) {
+            int memNum = listLen(mainMemory->processes);
+            int loaded = swap(firstFit, &disk, &mainMemory, time); // load oldest process on disk into memory (if any)
+            printStats(time, loaded, listLen(mainMemory->processes),
+                       listLen(mainMemory->holes), memUsage(mainMemory));
+            if(memNum > listLen(mainMemory->processes))
+                dqStat = 1;
+            schedule(roundRobin, QUANTUM, dqStat); // schedule using RR
+            eventTimer = QUANTUM;
+            dqStat = 0;
+        }
+
+        /* TIME STATS */
+        ((Process)peek(*roundRobin))->timeRemaining--; // front of RR queue is executing
         time++; // the flow of time continues
         eventTimer--;
     }
@@ -92,7 +106,7 @@ int parse(char *file, List *l)
     while(fscanf(f, "%d %d %d %d", &a,&b,&c,&d) == TABLECOLS) {
         Process proc;
         proc = malloc(sizeof(struct process_t));
-        proc->timeCreated = a;
+        proc->mod = a;
         proc->id = b;
         proc->size = c;
         proc->timeRemaining = d;
@@ -103,5 +117,16 @@ int parse(char *file, List *l)
     
     // return the number of processes
     return i;
+}
+
+void printStats(int time, int loaded, int numprocs, int numholes, int memusage)
+{
+
+    fprintf(stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n", 
+                   time,
+                   loaded,
+                   numprocs,
+                   numholes,
+                   memusage);
 }
 

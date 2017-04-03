@@ -9,15 +9,20 @@
 #include "swap.h"
 #include "list.h"
 
-int swap(void (*method)(Memory *memory, Process p, Queue *disk, int time), Queue *disk, Memory *memory, int time)
+int swap(void (*method)(Memory *memory, Process p, Queue *disk, int time), Queue *disk, Memory *memory, int time, int *loaded)
 {
     Process proc = dequeue(disk); // process sitting on disk for longest
     if(proc != NULL) {
+        Process prev = peek((*memory)->roundRobin);
         // find our free spot and add our process
         method(memory, proc, disk, time);
-        return proc->id;
+        *loaded = proc->id;
+        if(prev != peek((*memory)->roundRobin))
+            return 1;
+    } else {
+        *loaded = -1;    
     }
-    return -1;
+    return 0;
 }
 
 void firstFit(Memory *memory, Process p, Queue *disk, int time){
@@ -37,8 +42,51 @@ void firstFit(Memory *memory, Process p, Queue *disk, int time){
         firstFit(memory, p, disk, time);
     }
 }
-void bestFit(Memory *memory, Process p, Queue *disk, int time){}
-void worstFit(Memory *memory, Process p, Queue *disk, int time){}
+void bestFit(Memory *memory, Process p, Queue *disk, int time){
+    List temp = (*memory)->holes;
+    Hole h = NULL;
+    while(temp != NULL) {
+        int size = ( (Hole)(temp->data))->size;
+        if(size >= p->size) {
+            if(h == NULL) {
+                h = temp->data;
+            } else if(h->size < size) {
+                h = temp->data;
+            }
+        }
+        temp = temp->next;
+    }
+
+    if(h != NULL) {
+        addProcess(memory, &h, p);
+    } else {
+        freeHole(memory, disk, time);
+        bestFit(memory, p, disk, time);
+    }
+
+}
+void worstFit(Memory *memory, Process p, Queue *disk, int time){
+    List temp = (*memory)->holes;
+    Hole h = NULL;
+    while(temp != NULL) {
+        int size = ( (Hole)(temp->data))->size;
+        if(size >= p->size) {
+            if(h == NULL) {
+                h = temp->data;
+            } else if(h->size > size) {
+                h = temp->data;
+            }
+        }
+        temp = temp->next;
+    }
+
+    if(h != NULL) {
+        addProcess(memory, &h, p);
+    } else {
+        freeHole(memory, disk, time);
+        worstFit(memory, p, disk, time);
+    }
+}
 
 void addToDisk(Queue *disk, Process proc)
 {

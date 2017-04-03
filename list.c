@@ -103,7 +103,7 @@ void printList(List l)
     if(l) {
         Process p = l->data;
         //printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
-        fprintf(stderr, "%d\n", p->id);
+        fprintf(stderr, "{%d, %d}\n", p->id, p->timeRemaining);
         printList(l->next);
     }
 }

@@ -25,7 +25,8 @@ int swap(void (*method)(Memory *memory, Process p, Queue *disk, int time), Queue
     return 0;
 }
 
-void firstFit(Memory *memory, Process p, Queue *disk, int time){
+void firstFit(Memory *memory, Process p, Queue *disk, int time)
+{
     List temp = (*memory)->holes;
     int success = 0;
     while(success == 0 && temp != NULL ) {
@@ -42,7 +43,8 @@ void firstFit(Memory *memory, Process p, Queue *disk, int time){
         firstFit(memory, p, disk, time);
     }
 }
-void bestFit(Memory *memory, Process p, Queue *disk, int time){
+void bestFit(Memory *memory, Process p, Queue *disk, int time)
+{
     List temp = (*memory)->holes;
     Hole h = NULL;
     while(temp != NULL) {
@@ -50,7 +52,7 @@ void bestFit(Memory *memory, Process p, Queue *disk, int time){
         if(size >= p->size) {
             if(h == NULL) {
                 h = temp->data;
-            } else if(h->size < size) {
+            } else if(h->size > size) {
                 h = temp->data;
             }
         }
@@ -73,7 +75,7 @@ void worstFit(Memory *memory, Process p, Queue *disk, int time){
         if(size >= p->size) {
             if(h == NULL) {
                 h = temp->data;
-            } else if(h->size > size) {
+            } else if(h->size < size) {
                 h = temp->data;
             }
         }
@@ -88,7 +90,3 @@ void worstFit(Memory *memory, Process p, Queue *disk, int time){
     }
 }
 
-void addToDisk(Queue *disk, Process proc)
-{
-    insertSorted(&compareModId, proc, disk);
-}

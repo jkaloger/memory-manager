@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "list.h"
 #include "queue.h"
@@ -16,31 +18,86 @@
 #include "memory.h"
 
 #define DEBUG 1
-#define QUANTUM 7
 #define TABLECOLS 4
 #define INF -1
 
+extern  int     optind;
+extern  char    *optarg;
+
 int parse(char *file, List *l);
 void printStats(int time, int loaded, int numprocs, int numholes, int memusage);
-void addToDisk(Queue *disk, Process proc);
 
 /* Drives our memory manager
  */
 int main(int argc, char **argv)
 {
+    char *filename;
+    int memSize = 0;
+    int quantum = 0;
+    void (*alg)(Memory *memory, Process p, Queue *disk, int time) = &firstFit;
+    char input;
+
+    while ((input = getopt(argc, argv, "f:a:m:q:")) != -1)
+    {
+        switch ( input )
+        {
+            case 'f':
+                filename = optarg;
+                break;
+           
+            case 'a':
+                // set the value of size (int value) based on optarg
+                if(strcmp(optarg, "first") == 0)  {
+                    alg = &firstFit;
+                } else if(strcmp(optarg, "best") == 0) {
+                    alg = &bestFit;
+                } else if(strcmp(optarg, "worst") == 0){
+                    alg = &worstFit;   
+                } else {
+                    // exit if optarg unknown
+                    fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
+                        argv[0]);
+                    exit(EXIT_FAILURE);
+                }
+                break;
+
+            case 'm':
+                // set the value of size (int value) based on optarg
+                memSize = atoi(optarg);
+                break;
+
+            case 'q':
+                // set the value of size (int value) based on optarg
+                quantum = atoi(optarg);
+                break;
+
+            default:
+                // usage message
+                fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
+                        argv[0]);
+                    exit(EXIT_FAILURE);
+                break;
+        } 
+    }
+
+    if(filename == NULL || memSize == 0 || quantum == 0) {
+        fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
+                        argv[0]);
+                    exit(EXIT_FAILURE);
+    }
+
     /* Structures */
     List processes = NULL; // our initial list of processes from input file
     Queue *roundRobin = NULL; // round robin queue, a pointer to the memory queue
     Queue disk = NULL; // processes on our disk
-    Memory mainMemory = memInit(1000);
+    Memory mainMemory = memInit(memSize);
     roundRobin = &(mainMemory->roundRobin);
 
     /* Counting variables */
     // we keep an array of the processes input
-    int n = parse("../in/testFirst1", &processes);
+    int n = parse(filename, &processes);
     int time = 0;
     int eventTimer = 0;
-    int q = QUANTUM;
     int processesLoaded = 0;
     int dqStat = 0;
 
@@ -69,18 +126,18 @@ int main(int argc, char **argv)
         if(eventTimer == 0) {
             int loaded = 0;
             if(dqStat == 0)
-                dqStat = swap(&firstFit, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
+                dqStat = swap(alg, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
             else
-                swap(&firstFit, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
+                swap(alg, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
             if(loaded > INF)
                 printStats(time, loaded, listLen(mainMemory->processes),
                            listLen(mainMemory->holes), memUsage(mainMemory));
-            eventTimer = schedule(roundRobin, QUANTUM, dqStat); // schedule using RR
+            eventTimer = schedule(roundRobin, quantum, dqStat); // schedule using RR
             dqStat = 0;
         }
 
         if(eventTimer < 0) {
-            fprintf(stdout, "time %d, simulation finished.", time);
+            fprintf(stdout, "time %d, simulation finished.\n", time);
             return 0;
         }
 
@@ -90,7 +147,7 @@ int main(int argc, char **argv)
         eventTimer--; // count down to next event
     }
 
-    fprintf(stdout, "time %d, simulation finished.", time);
+    fprintf(stdout, "time %d, simulation finished.\n", time);
     // done :)
     return 0;
 }

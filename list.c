@@ -9,12 +9,12 @@
 #include "memory.h"
 
 /* Insert data into list in a sorted way using specified method */
-void insertSorted(int (*compareFunction)(void *a, void *b), List *l, void *data)
+void insertSorted(int (*compareFunction)(void *, void *), List *l, void *data)
 {
     // temporary list to iterate through
     List temp = *l;
     // create a new node to be inserted
-    List new = malloc(sizeof(struct list_t)); // allocate struct size NOT POINTER SIZE
+    List new = malloc(sizeof(struct list_t)); // allocate struct size
     new->data = data;
     new->next = NULL;
 

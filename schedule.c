@@ -8,21 +8,22 @@
 #include "schedule.h" 
 #include "process.h"
 
+/* schedule process using round robin queue */
 int schedule(Queue *roundRobin, int quantum, int dqStat)
 {
+    // get our process
     Process proc = peek(*roundRobin);
     if(!proc) {
-        return -1;
+        return -1; // no processes left
     }
 
-    if(dqStat == 0) {// our process hasn't finished
-        enqueue(roundRobin, dequeue(roundRobin)); // send it back to the end of the queue
+    if(dqStat == 0) { // our process hasn't finished
+        enqueue(roundRobin, dequeue(roundRobin)); // back of the line
     }
+
     // schedule the next process to use cpu
-    proc = peek(*roundRobin);
-    int timeRemaining = proc->timeRemaining;
-    //fprintf(stderr, "proc %d timeremaining: %d\n", proc->id, timeRemaining);
-    int eventTimer = quantum;
-    //fprintf(stderr, "running %d, tr: %d\n", proc->id, timeRemaining);
+    proc = peek(*roundRobin); 
+    int eventTimer = quantum; // count down...
+
     return eventTimer;
 }

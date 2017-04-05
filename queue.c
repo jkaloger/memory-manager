@@ -9,11 +9,7 @@
 
 #include "queue.h"
 
-void *dequeue(Queue *q)
-{
-    return pop(q);
-}
-
+/* add data to back of queue */
 void enqueue(Queue *q, void *data)
 {
     // temporary list to iterate through
@@ -33,6 +29,13 @@ void enqueue(Queue *q, void *data)
     }
 }
 
+/* remove and return front of queue */
+void *dequeue(Queue *q)
+{
+    return pop(q);
+}
+
+/* return front of queue */
 void *poll(Queue q)
 {
     return q->data;

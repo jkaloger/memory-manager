@@ -8,71 +8,111 @@
 
 #include "memory.h"
 
+/* initialises memory with size size */
 Memory memInit(int size)
 {
-    // init memory
     Memory memory = malloc(sizeof(struct memory_t));
     memory->size = size;
 
-    // memory starts off empty
+    // memory starts off empty, with 1 hole, same size as memory
     Hole h = malloc(sizeof(struct hole_t));
     h->startAddress = 0;
-    h->size = size; // 0-indexed
+    h->size = size;
 
+    // add our hole to the memory
     List holes = malloc(sizeof(struct list_t));
     holes->data = h;
     holes->next = NULL;
     memory->holes = holes;
+
     memory->processes = NULL;
     memory->roundRobin = NULL;
+
     return memory;
 }
 
-void addProcess(Memory *m, Hole *h, Process p)
+/* adds process p to memory in hole h, in the upper address space of hole */
+void addProcess(Memory *memory, Hole *h, Process p)
 {
-    int staddr = (*h)->startAddress;
+    // get the hole details
+    int staddr = (*h)->startAddress; // start address
     int holeSize = (*h)->size;
-    int enaddr = staddr + holeSize;
+    int enaddr = staddr + holeSize; // end address
+    // calculate location of process
     p->memLoc = enaddr - p->size;
     // add process to round robin queue and process pool
-    enqueue(&((*m)->roundRobin), p);
-    enqueue(&((*m)->processes), p);
+    enqueue(&((*memory)->roundRobin), p);
+    enqueue(&((*memory)->processes), p);
     // remove or reduce hole
     if(holeSize == p->size) {
         // remove the hole
-
-        removeItem(&((*m)->holes), *h);
+        removeItem(&((*memory)->holes), *h);
     } else if(holeSize > p->size) {
         // modify our current hole size
         (*h)->size -= p->size; // the proc is taking up this much space
     } 
 }
 
-void removeProcess(Memory *m, Queue *disk, int time)
+/* removes the front of the RR queue into disk */
+void removeProcess(Memory *memory, Queue *disk, int time)
 {
-    // move from mem->disk
-    Process proc = dequeue(&(*m)->processes);
-    removeItem(&(*m)->roundRobin, proc);
+    // remove from memory
+    Process proc = dequeue(&(*memory)->processes);
+    removeItem(&(*memory)->roundRobin, proc);
+
+    // set time modified
     proc->mod = time;
+
+    // add to disk
     insertSorted(&compareModId, disk, proc);
-    createHole(&(*m)->holes, proc->memLoc, proc->memLoc + proc->size - 1);
+
+    // create a hole at the old location
+    createHole(&(*memory)->holes, proc->memLoc, proc->memLoc + proc->size - 1);
 }
 
+/* creates a hole from memory address start to end */
 void createHole(List *holes, int start, int end)
 {
     Hole h = malloc(sizeof(struct hole_t));
     h->startAddress = start;
     h->size = (end-start) + 1;
+
+    // insert by descending memory address
     insertSorted(&compareHoleAddress, holes, h);
 }
 
-void freeHole(Memory *mem, Queue *disk, int time)
+/* merges all adjacent holes in memory */
+void mergeHoles(Memory *memory)
 {
-    removeProcess(mem, disk, time);
-    mergeHoles(mem);
+    List temp = (*memory)->holes;
+    while(temp->next != NULL) { // iterate through all hole
+        int currentStart = ((Hole)(temp->data))->startAddress;
+        int nextEnd = ((Hole)((temp->next))->data)->startAddress
+                      + ((Hole)((temp->next))->data)->size;
+        if(currentStart == nextEnd) { // holes are adjacent
+            ((Hole)(temp->data))->size += ((Hole)((temp->next)->data))->size;
+            ((Hole)(temp->data))->startAddress = 
+                                     ((Hole)((temp->next)->data))->startAddress;
+            temp->next = (temp->next)->next; // remove the old hole
+        } else {
+            temp = temp->next; // iterate
+        }
+    }
+
+}
+
+/* frees a hole by removing the oldest process in memory */
+void freeHole(Memory *memory, Queue *disk, int time)
+{
+    // remove the top of the RR queue
+    removeProcess(memory, disk, time);
+    // merge all adjacent holes
+    mergeHoles(memory);
     
 }
 
+/* compares 2 hole addresses
+ * returns 1 if addr1 > addr2, -1 if addr1 < addr2, 0 otherwise */
 int compareHoleAddress(void *hole1, void *hole2)
 {
     int a = ((Hole)hole1)->startAddress; // inserting address
@@ -85,41 +125,28 @@ int compareHoleAddress(void *hole1, void *hole2)
     return 0; // insert now
 }
 
-void mergeHoles(Memory *mem)
-{
-    List temp = (*mem)->holes;
-    while(temp->next != NULL) {
-        int currentStart = ((Hole)(temp->data))->startAddress;
-        int nextEnd = ((Hole)((temp->next))->data)->startAddress + ((Hole)((temp->next))->data)->size;
-        if(currentStart == nextEnd) { // merge the holes
-            ((Hole)(temp->data))->size += ((Hole)((temp->next)->data))->size;
-            ((Hole)(temp->data))->startAddress = ((Hole)((temp->next)->data))->startAddress;
-            temp->next = (temp->next)->next;
-        } else {
-            temp = temp->next;
-        }
-    }
-
-}
-
+/* calculates the memory usage */
 int memUsage(Memory memory)
 {
     float usage = 0;
     float total = (float)(memory->size);
     List temp = memory->processes;
     while(temp != NULL) {
-        usage += ((Process)(temp->data))->size;
+        usage += ((Process)(temp->data))->size; // count size of all processes
         temp = temp->next;
     }
 
-    int final = 1 + ((usage - 1) / total) * 100;
+    int final = 1 + ((usage - 1) / total) * 100; // round up
     return final;
 }
 
+/* prints all holes in a list of holes */
 void printHoles(List l)
 {
     if(l) {
-        printf("%d->%d\n", ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress + ((Hole)(l->data))->size - 1);
+        printf("%d->%d\n",
+            ((Hole)(l->data))->startAddress,((Hole)(l->data))->startAddress
+            + ((Hole)(l->data))->size - 1);
         printHoles(l->next);
     }
 }

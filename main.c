@@ -12,10 +12,10 @@
 
 #include "list.h"
 #include "queue.h"
-#include "swap.h"
-#include "schedule.h"
 #include "process.h"
 #include "memory.h"
+#include "swap.h"
+#include "schedule.h"
 
 #define DEBUG 1
 #define TABLECOLS 4
@@ -28,6 +28,8 @@ extern  char    *optarg;
 int parse(char *file, List *l);
 /* prints the status of memory at time t */
 void printStats(int time, int loaded, int numprocs, int numholes, int memusage);
+/* prints the usage options, then exits the program */
+void printUsage(char *prog);
 
 /* Drives our memory manager */
 int main(int argc, char **argv)
@@ -36,9 +38,10 @@ int main(int argc, char **argv)
     char *filename;
     int memSize = 0;
     int quantum = 0;
-    void (*alg)(Memory *, Process, Queue *, int) = &firstFit; // default to first fit
+    Method alg = &firstFit; // default
     char input;
 
+    /* get user specified options */
     while ((input = getopt(argc, argv, "f:a:m:q:")) != -1)
     {
         switch ( input )
@@ -57,9 +60,7 @@ int main(int argc, char **argv)
                     alg = &worstFit;   
                 } else {
                     // exit if optarg unknown
-                    fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
-                        argv[0]);
-                    exit(EXIT_FAILURE);
+                    printUsage(argv[0]);
                 }
                 break;
 
@@ -75,54 +76,53 @@ int main(int argc, char **argv)
 
             default: // nothing specified. error
                 // usage message
-                fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
-                        argv[0]);
-                    exit(EXIT_FAILURE);
+                printUsage(argv[0]);
                 break;
         } 
     }
 
     // check values are valid, otherwise print usage message
     if(filename == NULL || memSize == 0 || quantum == 0) {
-        fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
-                        argv[0]);
-                    exit(EXIT_FAILURE);
+        printUsage(argv[0]);
     }
 
     /* Structures */
     List processes = NULL; // our initial list of processes from input file
-    Queue *roundRobin = NULL; // round robin queue, a pointer to the memory queue
     Queue disk = NULL; // processes on our disk
     Memory mainMemory = memInit(memSize); // main memory unit
-    roundRobin = &(mainMemory->roundRobin); // round robin queue
+    Queue *roundRobin = &(mainMemory->roundRobin);; // round robin queue
+    
 
     /* Counting variables */
-    // we keep an array of the processes input
-    int n = parse(filename, &processes); // load the processes from specified input
+    // load the processes from specified input, store the number of processes
+    int n = parse(filename, &processes);
     int time = 0;
     int eventTimer = 0;
-    int processesLoaded = 0;
-    int dqStat = 0; // dequeue status. if 1, schedule will not dequeue the round robin queue
+    int dqStat = 0; // if 1, scheduler will not dequeue Round Robin queue
 
     // loop until RR queue empty
     while(time == 0 || listLen(*roundRobin) > 0) { 
         if(n > 0) {
             // load new processes to disk as they come in
-            while(processes != NULL && ((Process)peek(processes))->mod == time) {
+            while(processes != NULL && ((Process)peek(processes))->mod == time){
                 Process newProc = pop(&processes); // our process
-                insertSorted(&compareModId, &disk, newProc); // add it to disk (in priority order)
+                insertSorted(&compareModId, &disk, newProc); // add it to disk
                 n--; // continue doing this until all processes have been added
             }
         }
 
-        // terminated processes should be removed from memory before swapping the next process
+        // remove terminated processes from memory before swapping next process
         if(((Process)peek(*roundRobin)) != NULL
-           && ((Process)peek(*roundRobin))->timeRemaining == 0) { // The process finished executing
+        && ((Process)peek(*roundRobin))->timeRemaining == 0) {
             // process executing must be at the head of the RR queue
             Process proc = dequeue(roundRobin);
             removeItem(&mainMemory->processes, proc); // remove it from memory
-            createHole(&(mainMemory->holes), proc->memLoc, proc->memLoc + proc->size - 1); // add hole
-            mergeHoles(&mainMemory); // merge holes
+            
+            // add a hole to memory
+            createHole(&(mainMemory->holes), proc->memLoc,
+                       proc->memLoc + proc->size - 1); 
+            mergeHoles(&mainMemory); // merge
+
             eventTimer = 0; // something happned!
             dqStat = 1; // tell scheduler not to dequeue RR again
         }
@@ -130,17 +130,19 @@ int main(int argc, char **argv)
         // when an event occurs
         if(eventTimer == 0) {
             int loaded = -1; // id of the loaded process (-1 if none)
-            if(dqStat == 0) // if the scheduler hasnt been told to dequeue, check for other dequeue stats
-                dqStat = swap(alg, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
-            else
-                swap(alg, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
+            if(dqStat == 0) // check for other dequeue stats
+                // load oldest process on disk into memory (if any)
+                dqStat = swap(alg, &disk, &mainMemory, time, &loaded); 
+            else // scheduler already told not to dequeue
+                // load oldest process on disk into memory (if any)
+                swap(alg, &disk, &mainMemory, time, &loaded); 
             if(loaded > INF) // when we load something, print its status
                 printStats(time, loaded, listLen(mainMemory->processes),
                            listLen(mainMemory->holes), memUsage(mainMemory));
 
-            eventTimer = schedule(roundRobin, quantum, dqStat); // schedule using RR
+            eventTimer = schedule(roundRobin, quantum, dqStat); // schedule RR
             
-            dqStat = 0; // reset or dequeue status
+            dqStat = 0; // reset dequeue status
         }
 
         // event timer is set to -1 when the last process terminates
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
         }
 
         /* TIME STATS */
-        ((Process)peek(*roundRobin))->timeRemaining--; // front of RR queue is executing
+        ((Process)peek(*roundRobin))->timeRemaining--; // RR head is executing
         time++; // the flow of time continues
         eventTimer--; // count down to next event
     }
@@ -196,14 +198,21 @@ int parse(char *file, List *l)
     return i;
 }
 
+/* prints the status of memory at time t */
 void printStats(int time, int loaded, int numprocs, int numholes, int memusage)
 {
-
-    fprintf(stdout, "time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n", 
-                   time,
-                   loaded,
-                   numprocs,
-                   numholes,
-                   memusage);
+    printf("time %d, %d loaded, numprocesses=%d, numholes=%d, memusage=%d%%\n", 
+            time,
+            loaded,
+            numprocs,
+            numholes,
+            memusage);
 }
 
+/* prints the usage options, then exits the program */
+void printUsage(char *prog) {
+    fprintf(stderr,
+        "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
+        prog);
+    exit(EXIT_FAILURE);
+}

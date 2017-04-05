@@ -37,7 +37,7 @@ list.h: process.h
 list.o: list.h
 queue.h: list.h
 queue.o: queue.h
-memory.h: list.h
+memory.h: list.h queue.h
 memory.o: memory.h
 schedule.h: queue.h
 schedule.o: schedule.h

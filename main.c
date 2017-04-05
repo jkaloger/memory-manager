@@ -24,28 +24,30 @@
 extern  int     optind;
 extern  char    *optarg;
 
+/* loads processes from specified file and adds them to the list */
 int parse(char *file, List *l);
+/* prints the status of memory at time t */
 void printStats(int time, int loaded, int numprocs, int numholes, int memusage);
 
-/* Drives our memory manager
- */
+/* Drives our memory manager */
 int main(int argc, char **argv)
 {
+    /* user input variables */
     char *filename;
     int memSize = 0;
     int quantum = 0;
-    void (*alg)(Memory *memory, Process p, Queue *disk, int time) = &firstFit;
+    void (*alg)(Memory *memory, Process p, Queue *disk, int time) = &firstFit; // default to first fit
     char input;
 
     while ((input = getopt(argc, argv, "f:a:m:q:")) != -1)
     {
         switch ( input )
         {
-            case 'f':
+            case 'f': // file name specified
                 filename = optarg;
                 break;
            
-            case 'a':
+            case 'a': // algorithm specified
                 // set the value of size (int value) based on optarg
                 if(strcmp(optarg, "first") == 0)  {
                     alg = &firstFit;
@@ -61,17 +63,17 @@ int main(int argc, char **argv)
                 }
                 break;
 
-            case 'm':
+            case 'm': // memory size specified
                 // set the value of size (int value) based on optarg
                 memSize = atoi(optarg);
                 break;
 
-            case 'q':
+            case 'q': // quantum specified
                 // set the value of size (int value) based on optarg
                 quantum = atoi(optarg);
                 break;
 
-            default:
+            default: // nothing specified. error
                 // usage message
                 fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
                         argv[0]);
@@ -80,6 +82,7 @@ int main(int argc, char **argv)
         } 
     }
 
+    // check values are valid, otherwise print usage message
     if(filename == NULL || memSize == 0 || quantum == 0) {
         fprintf(stderr, "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
                         argv[0]);
@@ -90,24 +93,24 @@ int main(int argc, char **argv)
     List processes = NULL; // our initial list of processes from input file
     Queue *roundRobin = NULL; // round robin queue, a pointer to the memory queue
     Queue disk = NULL; // processes on our disk
-    Memory mainMemory = memInit(memSize);
-    roundRobin = &(mainMemory->roundRobin);
+    Memory mainMemory = memInit(memSize); // main memory unit
+    roundRobin = &(mainMemory->roundRobin); // round robin queue
 
     /* Counting variables */
     // we keep an array of the processes input
-    int n = parse(filename, &processes);
+    int n = parse(filename, &processes); // load the processes from specified input
     int time = 0;
     int eventTimer = 0;
     int processesLoaded = 0;
-    int dqStat = 0;
+    int dqStat = 0; // dequeue status. if 1, schedule will not dequeue the round robin queue
 
-    /* loop until RR queue empty */
+    // loop until RR queue empty
     while(time == 0 || listLen(*roundRobin) > 0) { 
-        // load new processes to disk as they come in
         if(n > 0) {
+            // load new processes to disk as they come in
             while(processes != NULL && ((Process)peek(processes))->mod == time) {
                 Process newProc = pop(&processes); // our process
-                insertSorted(&compareModId, &disk, newProc); // add it to disk
+                insertSorted(&compareModId, &disk, newProc); // add it to disk (in priority order)
                 n--; // continue doing this until all processes have been added
             }
         }
@@ -115,27 +118,32 @@ int main(int argc, char **argv)
         // terminated processes should be removed from memory before swapping the next process
         if(((Process)peek(*roundRobin)) != NULL
            && ((Process)peek(*roundRobin))->timeRemaining == 0) { // The process finished executing
+            // process executing must be at the head of the RR queue
             Process proc = dequeue(roundRobin);
-            removeItem(&mainMemory->processes, proc); // remove from memory
+            removeItem(&mainMemory->processes, proc); // remove it from memory
             createHole(&(mainMemory->holes), proc->memLoc, proc->memLoc + proc->size - 1); // add hole
             mergeHoles(&mainMemory); // merge holes
-            eventTimer = 0;
-            dqStat = 1;
+            eventTimer = 0; // something happned!
+            dqStat = 1; // tell scheduler not to dequeue RR again
         }
 
+        // when an event occurs
         if(eventTimer == 0) {
-            int loaded = 0;
-            if(dqStat == 0)
+            int loaded = -1; // id of the loaded process (-1 if none)
+            if(dqStat == 0) // if the scheduler hasnt been told to dequeue, check for other dequeue stats
                 dqStat = swap(alg, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
             else
                 swap(alg, &disk, &mainMemory, time, &loaded); // load oldest process on disk into memory (if any)
-            if(loaded > INF)
+            if(loaded > INF) // when we load something, print its status
                 printStats(time, loaded, listLen(mainMemory->processes),
                            listLen(mainMemory->holes), memUsage(mainMemory));
+
             eventTimer = schedule(roundRobin, quantum, dqStat); // schedule using RR
-            dqStat = 0;
+            
+            dqStat = 0; // reset or dequeue status
         }
 
+        // event timer is set to -1 when the last process terminates
         if(eventTimer < 0) {
             fprintf(stdout, "time %d, simulation finished.\n", time);
             return 0;
@@ -147,7 +155,9 @@ int main(int argc, char **argv)
         eventTimer--; // count down to next event
     }
 
+    // edge case
     fprintf(stdout, "time %d, simulation finished.\n", time);
+    
     // done :)
     return 0;
 }

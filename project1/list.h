@@ -16,7 +16,7 @@ struct list_t {
 };
 
 /* Insert data into list in a sorted way using specified method */
-void insertSorted(int (*method)(void *a, void *b),List *l, void *d);
+void insertSorted(int (*method)(void *, void *),List *l, void *d);
 /* adds data to head of the list */
 void push(List *l, void *data);
 /* removes and returns the head of the list */

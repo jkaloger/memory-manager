@@ -8,6 +8,7 @@
 #include "queue.h"
 #include "process.h"
 
+/* schedule process using roundrobin queue */
 int schedule(Queue *roundRobin, int quantum, int dqStat);
 
 #endif

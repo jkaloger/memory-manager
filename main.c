@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     int dqStat = 0; // if 1, scheduler will not dequeue Round Robin queue
 
     // loop until RR queue empty
-    while(time == 0 || listLen(*roundRobin) > 0) { 
+    while(processes != NULL || listLen(*roundRobin) > 0) { 
         if(n > 0) {
             // load new processes to disk as they come in
             while(processes != NULL && ((Process)peek(processes))->mod == time){
@@ -145,10 +145,17 @@ int main(int argc, char **argv)
             dqStat = 0; // reset dequeue status
         }
 
-        // event timer is set to -1 when the last process terminates
+        // event timer is set to -1 when the last process in RR terminates
         if(eventTimer < 0) {
-            fprintf(stdout, "time %d, simulation finished.\n", time);
-            return 0;
+            if(processes == NULL) { // all processes completed
+                fprintf(stdout, "time %d, simulation finished.\n", time);
+                return 0;
+            } else {
+                // still have more processes
+                time++;
+                eventTimer = 0;
+                continue;
+            }
         }
 
         /* TIME STATS */

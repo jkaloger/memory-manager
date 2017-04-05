@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     char *filename;
     int memSize = 0;
     int quantum = 0;
-    void (*alg)(Memory *memory, Process p, Queue *disk, int time) = &firstFit; // default to first fit
+    void (*alg)(Memory *, Process, Queue *, int) = &firstFit; // default to first fit
     char input;
 
     while ((input = getopt(argc, argv, "f:a:m:q:")) != -1)

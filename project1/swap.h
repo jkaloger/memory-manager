@@ -10,7 +10,7 @@
 #include "list.h"
 #include "queue.h"
 
-int swap(void (*method)(Memory *memory, Process p, Queue *disk, int time), Queue *disk, Memory *memory, int time, int *loaded);
+int swap(void (*method)(Memory *, Process, Queue *, int), Queue *disk, Memory *memory, int time, int *loaded);
 void firstFit(Memory *memory, Process p, Queue *disk, int time);
 void bestFit(Memory *memory, Process p, Queue *disk, int time);
 void worstFit(Memory *memory, Process p, Queue *disk, int time);

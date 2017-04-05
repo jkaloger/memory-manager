@@ -9,7 +9,7 @@
 #include "swap.h"
 #include "list.h"
 
-int swap(void (*method)(Memory *memory, Process p, Queue *disk, int time), Queue *disk, Memory *memory, int time, int *loaded)
+int swap(void (*method)(Memory *, Process, Queue *, int), Queue *disk, Memory *memory, int time, int *loaded)
 {
     Process proc = dequeue(disk); // process sitting on disk for longest
     if(proc != NULL) {

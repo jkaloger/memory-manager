@@ -102,7 +102,9 @@ void removeItem(List *l, void *data)
 {
     // the item was at the head of the list
     if((*l)->data == data) {
+        List toFree = *l;
         *l = (*l)->next;
+        free(toFree);
         return;
     }
 
@@ -119,6 +121,15 @@ void removeItem(List *l, void *data)
 
     // if we get to here, the item cannot be in the list
     fprintf(stderr, "couldnt find process in list!\n");
+}
+
+/* frees the list */
+void freeList(List l)
+{
+    if(l) { // if we're not at the end of the list
+        freeList(l); // free the next list item
+        free(l); // free the current list
+    }
 }
 
 /* prints the list of data pointers */

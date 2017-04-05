@@ -27,6 +27,8 @@ void *peek(List l);
 void *getTail(List l);
 /* removes the specified item from the list */
 void removeItem(List *l, void *data);
+/* frees the list */
+void freeList(List l);
 /* prints the list of data pointers */
 void printList(List l);
 /* returns the length of the list */

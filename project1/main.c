@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     char *filename;
     int memSize = 0;
     int quantum = 0;
-    Method alg = &firstFit; // default
+    Method alg = &firstFit; // first fit as default
     char input;
 
     /* get user specified options */
@@ -163,14 +163,11 @@ int main(int argc, char **argv)
         time++; // the flow of time continues
         eventTimer--; // count down to next event
     }
-
-    // edge case
-    fprintf(stdout, "time %d, simulation finished.\n", time);
-    
     // done :)
     return 0;
 }
 
+/* loads processes from specified file and adds them to the list */
 int parse(char *file, List *l)
 {
     // Read in file
@@ -218,8 +215,11 @@ void printStats(int time, int loaded, int numprocs, int numholes, int memusage)
 
 /* prints the usage options, then exits the program */
 void printUsage(char *prog) {
+    // print usage instructions
     fprintf(stderr,
         "Usage: %s [-f filename] [-a algorithm] [-m memorySize] [-q quantum]\n",
         prog);
+
+    // and exit
     exit(EXIT_FAILURE);
 }

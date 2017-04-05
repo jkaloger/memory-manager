@@ -15,13 +15,21 @@ struct list_t {
 	List next;
 };
 
-void insertSorted(int (*)(void *a, void *b),List *l, void *d);
+/* Insert data into list in a sorted way using specified method */
+void insertSorted(int (*method)(void *a, void *b),List *l, void *d);
+/* adds data to head of the list */
 void push(List *l, void *data);
+/* removes and returns the head of the list */
 void *pop(List *l);
+/* returns the head of the list */
 void *peek(List l);
+/* returns the tail of the list */
 void *getTail(List l);
+/* removes the specified item from the list */
 void removeItem(List *l, void *data);
+/* prints the list of data pointers */
 void printList(List l);
+/* returns the length of the list */
 int listLen(List l);
 
 #endif

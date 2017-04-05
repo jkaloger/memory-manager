@@ -93,7 +93,9 @@ void mergeHoles(Memory *memory)
             ((Hole)(temp->data))->size += ((Hole)((temp->next)->data))->size;
             ((Hole)(temp->data))->startAddress = 
                                      ((Hole)((temp->next)->data))->startAddress;
+            List toFree = temp->next;
             temp->next = (temp->next)->next; // remove the old hole
+            free(toFree);
         } else {
             temp = temp->next; // iterate
         }

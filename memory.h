@@ -13,7 +13,7 @@ typedef struct memory_t *Memory;
 typedef struct hole_t *Hole;
 
 struct memory_t {
-    int size;
+    int size; // size (in MB) of memory
     List holes;
     Queue processes; // all processes in memory, queued by time entered
     Queue roundRobin; // our round robin queue

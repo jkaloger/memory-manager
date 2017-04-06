@@ -1,5 +1,5 @@
-# Makefile For COMP30023 Project 1
-# Jack Kaloger 2017
+# Jack Kaloger 758278
+# Makefile For COMP30023 Project 1 2017
 
 ## CC  = Compiler.
 ## CFLAGS = Compiler flags.

@@ -1,5 +1,6 @@
-/* JK
- * COMP30023
+/* Jack Kaloger 758278
+ * schedule.c
+ * COMP30023 Project 1 2017
  */
 
 #include <stdio.h>
